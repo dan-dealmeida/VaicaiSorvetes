@@ -26,7 +26,16 @@ class User {
     password: string;
 
     @Column()
+    address: string;
+
+    @Column()
+    payment: string;
+
+    @Column()
     avatar: string;
+
+    @Column()
+    isProvider: boolean;
 
     @CreateDateColumn()
     created_at: Date;

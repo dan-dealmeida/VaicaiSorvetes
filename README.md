@@ -1,27 +1,30 @@
-# Recuperação de senha
+# Painel do cliente
 
 **Requisitos Funcionais**
 
-- O usuário deve poder recuperar sua senha informando seu e-mail;
-- O usuário deve receber um e-mail com instruções de recuperação de senha;
-- O usuário deve poder resetar sua senha;
+- O usuário deve poder visualizar as lojas cadastradas;
+- O usuário deve poder selecionar uma das lojas disponíveis e listar os sabores;
+- O usuário deve poder selecionar sabores para prosseguir com o pedido;
 
 **Requisitos Não Funcionais**
 
-- Utilizar Mailtrap para testar envios em ambiente de desenvolvimento;
-- Utilizar Amazon SES para envios em produção;
-- O envio de e-mails deve acontecer em segundo plano (background job);
+- Listar as lojas cadastradas nos bancos de dados (MySQL/PostgreSQL);
+- Listar os sabores cadastrados por determinada loja selecionada previamente;
 
 **Regras de Negócio**
 
-- O link enviado por e-mail para resetar a senha deve expirar em 2 horas;
-- O usuário precisa confirmar a nova senha ao resetar;
+- Lojas devem ser listadas apenas se possuirem sabores cadastrados;
+- Apenas usuários podem realizar pedidos;
 
-# Atualização de perfil
+# Criação de perfil
 
 **RF**
 
 - O usuário deve poder atualizar seu nome, email e senha.
+
+**RNF**
+
+- Os usuários cadastrados pelo sistema devem ser armazenados em um banco de dados relacional (MySQL/PostgreSQL);
 
 **RN**
 
@@ -29,41 +32,43 @@
 - Para atualizar sua senha, o usuário precisa informar a senha antiga;
 - Para atualizar sua senha, o usuário precisa confirmar sua nova senha;
 
-# Painel do prestador
+# Painel da loja
 
 **RF**
 
-- O usuário deve poder listar seus agendamentos de um dia específico;
-- O prestador deve receber uma notificação sempre que houver um novo agendamento;
-- O prestador deve poder visualizar as notificações nao lidas
+- A loja deve poder cadastrar um novo sabor;
+- A loja deve poder listar os pedidos realizados até o momento;
+- A loja deve receber uma notificação sempre que houver um novo pedido;
+- A loja deve poder visualizar as notificações nao lidas;
 
 **RNF**
 
-- Os agendamentos do prestador no dia devem ser armazenados em cache;
-- As notificações do prestador devem ser armazenados no MongoDB;
-- As notificações do prestador devem ser enviadas em tempo-real utilizando o Socket.io
+- Os sabores cadastrados pela loja devem ser armazenados em um banco de dados relacional (MySQL/PostgreSQL);
+- As notificações da loja devem ser armazenados no MongoDB;
+- As notificações da loja devem ser enviadas em tempo-real utilizando o Socket.io;
 
 **RN**
 
-- A notificação deve ter um status de lida ou não lida para que o prestador possa controlar;
+- A notificação deve ter um status de lida ou não lida para que a loja possa controlar;
+- Os dados do cliente que realizou o pedido devem estar disponíveis somente para a loja cujo produto foi comprado;
+- Os sabores cadastrados devem possuir imagens ilustrativas;
 
-# Agendamento de serviçoes
+# Realização de pedidos
 
 **RF**
 
-- O usuário deve poder listar todos os prestadores de serviços cadastrados;
-- O usuário deve poder listar os dias de um mês com pelo menos um horário disponível de um prestador;
-- O usuário deve poder listar horários disponíveis em um dia específico de um prestador;
-- O usuário deve poder realizar um novo agendamento com um prestador;
+- O usuário deve poder realizar multiplos pedidos;
+- A loja deve ser capaz de alterar o status dos pedidos;
+- O usuário deve ser capaz de visualizar o status do seu pedido;
 
 **RNF**
 
-- A listagem de prestadores deve ser armazenada em cache;
+- A listagem de pedidos deve ser armazenada em um banco de dados relacional (MySQL/PostgreSQL);
 
 **RN**
 
-- Cada agendamento deve durar 1h exatamente;
-- Os agendamentos devem estar disponíveis entre 8h e 18h;
-- O usuário não pode agendar em um horário já ocupado;
-- O usuário não pode agendar em um horário que ja passou;
-- O usuário não pode agendar serviços consigo mesmo;
+- Pedidos de status "entregue" não deverão ser listados como pendentes;
+- O usuário não pode alterar seu pedido depois de realizado;
+- O usuário não pode incluir sabores não cadastrados em seu pedido;
+- O preço total do pedido deverá ser calculado automaticamente com base nos sabores selecionados;
+- O pedido deverá estar disponível apenas para a loja em que o cliente realizou a compra;
