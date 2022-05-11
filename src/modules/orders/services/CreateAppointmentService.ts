@@ -1,24 +1,25 @@
 import { startOfHour, isBefore, getHours, format } from 'date-fns';
 import { injectable, inject } from 'tsyringe';
 
-import Appointment from '@modules/appointments/infra/typeorm/entities/Appointment';
+import Order from '@modules/orders/infra/typeorm/entities/Order';
 import AppError from '@shared/errors/AppError';
 
-import IAppointmentsRepository from '@modules/appointments/repositories/IAppointmentsRepository';
+import IOrdersRepository from '@modules/orders/repositories/IOrdersRepository';
 import INotificationsRepository from '@modules/notifications/repositories/INotificationsRepository';
 import ICacheProvider from '@shared/container/providers/CacheProvider/models/ICacheProvider';
 
 interface IRequest {
     provider_id: string;
     user_id: string;
-    date: Date;
+    flavors_id: string;
+    price: string;
 }
 
 @injectable()
-class CreateAppointmentService {
+class CreateOrderService {
     constructor(
-        @inject('AppointmentsRepository')
-        private appointmentsRepository: IAppointmentsRepository,
+        @inject('OrdersRepository')
+        private ordersRepository: IOrdersRepository,
 
         @inject('NotificationsRepository')
         private notificationsRepository: INotificationsRepository,
@@ -30,56 +31,27 @@ class CreateAppointmentService {
     public async execute({
         provider_id,
         user_id,
-        date,
-    }: IRequest): Promise<Appointment> {
-        const appointmentDate = startOfHour(date);
-        const cacheKey = `provider-appointments:${provider_id}:${format(
-            appointmentDate,
-            'yyyy-M-d',
-        )}`;
-
-        if (isBefore(appointmentDate, Date.now())) {
-            throw new AppError(
-                "You can't create an appointment on a past date",
-            );
-        }
-
+        flavors_id,
+        price
+    }: IRequest): Promise<Order> {
         if (user_id === provider_id) {
-            throw new AppError("You can't create an appointment with yourself");
+            throw new AppError("You can't place an order in your own store");
         }
 
-        if (getHours(appointmentDate) < 8 || getHours(appointmentDate) > 17) {
-            throw new AppError(
-                'You can only create appointments between 8 AM and 5 PM',
-            );
-        }
-
-        const findAppointmentInSameDate = await this.appointmentsRepository.findByDate(
-            appointmentDate,
-            provider_id,
-        );
-
-        if (findAppointmentInSameDate) {
-            throw new AppError('Já há marcações para este horário.');
-        }
-
-        const appointment = await this.appointmentsRepository.create({
+        const order = await this.ordersRepository.create({
             provider_id,
             user_id,
-            date: appointmentDate,
+            flavors_id,
+            price
         });
-
-        const dateFormated = format(appointmentDate, "dd/MM/yyyy 'às' HH:mm");
 
         await this.notificationsRepository.create({
             recipient_id: provider_id,
-            content: `Novo agendamento para ${dateFormated}`,
+            content: `Novo agendamento para ${Date.now()}`,
         });
 
-        await this.cacheProvider.invalidate(cacheKey);
-
-        return appointment;
+        return order;
     }
 }
 
-export default CreateAppointmentService;
+export default CreateOrderService;
